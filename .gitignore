@@ -131,7 +131,6 @@ dmypy.json
 .pyre/
 
 # data
-data/*.csv
 data/*.tsv
 data/*.zip
 data/*.gsv
