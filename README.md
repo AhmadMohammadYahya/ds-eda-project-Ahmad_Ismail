@@ -1,136 +1,83 @@
-# King County Housing EDA Project Template
+# King County Housing — Exploratory Data Analysis & Client Recommendation
 
-This is the starter template for the Exploratory Data Analysis (EDA) project. You will work with the King County housing dataset (home sales in and around Seattle, USA), uncover what drives house prices, and turn your findings into insights and recommendations for a client you choose.
+An exploratory data analysis of the King County housing market (Seattle area, USA), built to answer a concrete question for a fictional client: **can Thomas Hansen — a buyer with five kids and a tight budget — find the right home, without overpaying?**
 
-## Learning Objectives
+The project walks through cleaning and exploring 21,420 home sales, tests three hypotheses about what drives price (size, neighborhood quality, and timing), and turns the findings into a plain-language recommendation for a non-technical audience.
 
-By the end of this repository, you should be able to:
+## Repository Contents
 
-- Connect to a PostgreSQL database from Python and load query results into a pandas DataFrame.
-- Frame an exploratory data analysis around clear research questions and hypotheses.
-- Clean and wrangle a real-world dataset by handling missing values, outliers, and feature transformations.
-- Explore distributions and the relationships between features and the target variable (price).
-- Translate your analysis into at least three insights and three client-specific recommendations.
-- Present your work to a non-technical audience.
+| File / Folder | Description |
+| --- | --- |
+| [**04_eda.ipynb**](04_eda.ipynb) | The full analysis: data cleaning, exploration, hypothesis testing, and client-facing commentary. Start here for the technical detail. |
+| [**presentation.html**](presentation.html) | The client presentation as a self-contained, interactive HTML slide deck (39 slides). Open directly in any browser — arrow keys or the left/right edges navigate. Includes two embedded interactive dashboards. |
+| [**presentation.pdf**](presentation.pdf) | A static, one-slide-per-page PDF export of the same deck, for quick reference or printing. |
+| [**plots_Export_2/**](plots_Export_2/) | Every chart used in the notebook and the presentation, exported as standalone PNGs. |
+| [**html_exports/**](html_exports/) | The two interactive Plotly dashboards embedded in the presentation (a price/feature map of King County, and a combined strategy dashboard) — open these directly for a full-window view. |
+| [**column_names.md**](column_names.md) | Data dictionary describing every column in the King County housing dataset. |
+| [**03_fetching_the_data_eda.ipynb**](03_fetching_the_data_eda.ipynb) | Connects to the project's PostgreSQL database and pulls the raw dataset into a CSV. |
+| [**data/**](data/) | Local data folder (raw + cleaned CSVs). Not tracked in git — see [Setup](#setup) to regenerate it. |
+| [**01_assignment.md**](01_assignment.md) | The original project brief: goals, deliverables, and the list of fictional clients. |
+| [**02_workflow.md**](02_workflow.md) | The recommended EDA workflow this project followed. |
 
-## Learning Path
+## Project Summary
 
-Work through the files in order. Start with the assignment to understand the goal, follow the workflow as your guide, fetch the data, then run your analysis in the EDA notebook.
+- **Dataset:** King County Housing Data — 21,420 single-family home sales, May 2014 – May 2015.
+- **Client:** Thomas Hansen (buyer). Assumptions are stated explicitly in both the notebook and the presentation, since the client brief is fictional.
+- **Three hypotheses tested:**
+  1. Does a bigger house always cost more?
+  2. Does a nicer neighborhood cost more?
+  3. Is there a best time of year to buy?
+- **Headline findings:**
+  - A *smart layout* (4–5 bedrooms, 1,800–2,400 sq ft) costs **$415K**, versus **$715K** for a sprawling luxury layout with the same bedroom count — a **42% saving**.
+  - "Above Average" build-quality zip codes (construction grade 7.3–8.0) sit at a median of **$442K** — a well-kept neighborhood without the premium-tier markup.
+  - **February** has both the lowest average price of the year (~$508K) and the fewest sales — the best window for the least competition.
 
-> [!TIP]
-> The data lives in the **eda** schema of the database and is split across two tables. Before fetching anything in code, connect with DBeaver and explore that schema: inspect both tables, check [**Column Names**](column_names.md) for what each field means, and work out how to join them. Once you have a working `JOIN`, use it as the query in [**03 - Fetching the Data**](03_fetching_the_data_eda.ipynb) to load the combined dataset into pandas.
+## Viewing the Presentation
 
-| File / Folder                                                   | Description                                                                                                              |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| [**01 - Assignment**](01_assignment.md)                      | The project brief: the dataset, your tasks, deliverables, and the list of clients to choose from.                        |
-| [**02 - Workflow**](02_workflow.md)                          | A recommended EDA workflow, from understanding and questioning the data through cleaning, relationships, and presenting. |
-| [**03 - Fetching the Data**](03_fetching_the_data_eda.ipynb) | Connect to the PostgreSQL database with psycopg2 and SQLAlchemy, then pull the data into a pandas DataFrame.             |
-| [**04 - EDA**](04_eda.ipynb)                                 | Starter notebook for your exploratory data analysis.                                                                     |
-| [**Column Names**](column_names.md)                          | Data dictionary describing each column in the King County housing dataset.                                               |
+- **HTML (recommended):** open [`presentation.html`](presentation.html) in any browser. It's fully self-contained — no server needed — and includes two live, interactive charts you can zoom and hover over.
+- **PDF:** open [`presentation.pdf`](presentation.pdf) for a static, printable version (one slide per page).
 
-### Additional Folders and Files
+## Methodology
 
-| File / Folder                           | Description                                                                                    |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| [**Data**](data/)                    | Where you save the dataset CSV. The folder is tracked, but its data files are kept out of git. |
-| [**.env.example**](.env.example)     | Template for the database credentials. Copy it to `.env` and fill in your values.            |
-| [**pyproject.toml**](pyproject.toml) | Project configuration and dependencies.                                                        |
-| [**uv.lock**](uv.lock)               | Dependency lock file.                                                                          |
+The notebook follows a standard EDA workflow (see [02_workflow.md](02_workflow.md)):
+
+1. **Fetch** the data from the project database ([03_fetching_the_data_eda.ipynb](03_fetching_the_data_eda.ipynb)).
+2. **Clean** it — duplicate checks, missing values, type fixes ([04_eda.ipynb](04_eda.ipynb)).
+3. **Explore** price, size, age, renovation status, and geography.
+4. **Test three hypotheses**, each backed by its own charts and plain-language conclusions.
+5. **Recommend** a concrete plan, tying every finding back to the client's stated needs.
 
 ## Setup
 
 > [!NOTE]
-> Throughout these steps, text in angle brackets like `<repo-name>` is a **placeholder**. Replace it, including the `< >` brackets, with your own value. For example, `cd <repo-name>` becomes `cd ds-eda-project-template`.
+> Angle-bracket placeholders like `<repo-name>` should be replaced with your own values.
 
-### 1. Create the Repository from the Template
+1. **Clone the repository**
+   ```bash
+   git clone git@github.com:AhmadMohammadYahya/ds-eda-project-Ahmad_Ismail.git
+   cd ds-eda-project-Ahmad_Ismail
+   ```
 
-Click **Use this template** on GitHub.
+2. **Install dependencies** (creates a `.venv/` via [uv](https://docs.astral.sh/uv/))
+   ```bash
+   uv sync
+   ```
 
-When creating the repository:
+3. **Set up database credentials** (only needed to re-fetch raw data)
+   ```bash
+   cp .env.example .env
+   ```
+   Fill in `.env` with the King County housing database credentials. This file is gitignored and must never be committed.
 
-- Set yourself as the **Owner**
-- Choose a repository name
-- Disable **Include all branches**
-- Click **Create repository**
+4. **Open the notebooks** in VS Code (or Jupyter) from the project root, selecting the environment created by `uv sync`.
 
-> [!IMPORTANT]
-> If you are working in pairs or groups, only **one person** should complete this step.
----
+## References
 
-### 2. Add Collaborators (Pairs/Groups Only)
+- [House Sales in King County dataset](https://www.kaggle.com/datasets/harlfoxem/housesalesprediction) — the source dataset.
+- [Pandas user guide](https://pandas.pydata.org/docs/user_guide/index.html)
+- [Seaborn tutorial](https://seaborn.pydata.org/tutorial.html)
+- [Plotly Python documentation](https://plotly.com/python/)
 
-If working with teammates:
+## License
 
-1. Open the repository on GitHub
-2. Go to **Settings → Collaborators**
-3. Add your teammates as collaborators
-4. Share the repository link with your team
-
-Teammates should accept the invitation before continuing.
-
----
-
-### 3. Clone the Repository
-
-Copy the SSH URL from the **Code** button on GitHub, then run:
-
-```bash
-git clone <copied-ssh-url>
-```
-
-The copied SSH URL will look like `git@github.com:<your-username>/<repo-name>.git`.
-
----
-
-### 4. Move into the Project Folder and Install Dependencies
-
-This installs all dependencies and creates a virtual environment in `.venv/`.
-
-```bash
-cd <repo-name>
-uv sync
-```
-
-> [!TIP]
-> Need a library that is not installed yet (for example a mapping)? Add it with `uv add <package-name>`. This updates `pyproject.toml` and `uv.lock` and installs it into your `.venv`. Commit both files; teammates then run uv sync after pulling to get the same environment.
-
----
-
-### 5. Set up your Database Credentials
-
-The data-fetching notebook reads the database connection details from a `.env` file. Copy the template and fill in your own values:
-
-```bash
-cp .env.example .env
-```
-
-Open `.env` and replace the placeholders with the credentials for the King County housing database (the same ones you use in DBeaver). These values feed [**03 - Fetching the Data**](03_fetching_the_data_eda.ipynb).
-
-> [!CAUTION]
-> `.env` holds secrets and must never be committed. It is already listed in `.gitignore`. Only `.env.example`, with placeholder values, belongs in the repository.
-
----
-
-### 6. Open the Notebooks
-
-> [!NOTE]
-> Make sure you open VS Code from the project root so it automatically detects the environment created by uv sync.
-
-Launch VS Code in the project root folder:
-
-```bash
-code .
-```
-
-Then open a notebook and select the Python environment created by `uv sync` as the kernel.
-
-## References & Further Reading
-
-- [**House Sales in King County dataset**](https://www.kaggle.com/datasets/harlfoxem/housesalesprediction): The source dataset, with column descriptions and community notebooks.
-- [**Pandas user guide**](https://pandas.pydata.org/docs/user_guide/index.html): The official guide to data manipulation with pandas.
-- [**Seaborn tutorial**](https://seaborn.pydata.org/tutorial.html): Statistical data visualization in Python.
-- [**SQLAlchemy documentation**](https://docs.sqlalchemy.org/en/20/): The database toolkit used to query PostgreSQL from Python.
-- [**Hypothesis generation for EDA**](https://www.analyticsvidhya.com/blog/2020/11/an-efficient-way-of-performing-eda-hypothesis-generation/): How to form research questions and hypotheses before diving into the data.
-- [**EDA Checklist**](https://github.com/neuefische/datascience-infographics/blob/main/EDA_Checklist.md): A phase-by-phase checklist for working through an exploratory analysis.
-- [**Detailed EDA with Python**](https://www.kaggle.com/code/ekami66/detailed-exploratory-data-analysis-with-python): A worked example of a thorough EDA notebook on real data.
-- [**Tips for data science presentations**](https://www.dataknowsall.com/storytelling.html): Storytelling techniques for presenting results to a non-technical audience.
+See [LICENSE](LICENSE).

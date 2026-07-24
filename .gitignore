@@ -102,6 +102,7 @@ celerybeat.pid
 
 # Environments
 .env
+.env.example
 .venv
 env/
 .uv/
@@ -145,3 +146,6 @@ models/*.pkl
 
 # vscode Stuff
 .vscode
+
+# archives (working exports, not deliverables)
+*.zip

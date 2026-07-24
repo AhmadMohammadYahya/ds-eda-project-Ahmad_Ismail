@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>King County Housing Insights — Client Presentation</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --navy:#0B2942;
+    --primary:#0B4F6C;
+    --teal:#1C7293;
+    --teal-light:#6FB8D6;
+    --accent:#E8792D;
+    --white:#FFFFFF;
+    --ink:#1B2B36;
+    --muted:#5C7385;
+    --card:#EAF3F7;
+    --card-dark:#0F3A54;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;background:#03131f;font-family:Calibri,"Segoe UI",Arial,sans-serif;}
+  #viewport{position:fixed;inset:0;overflow:hidden;background:#03131f;display:flex;align-items:center;justify-content:center;}
+  #stage{position:relative;width:1280px;height:720px;transform-origin:center center;box-shadow:0 30px 80px rgba(0,0,0,.5);}
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;padding:56px 64px;overflow:hidden;background:var(--white);color:var(--ink);}
+  .slide.active{display:flex;}
+  .slide.dark{background:var(--navy);color:var(--white);}
+
+  .kicker{font-size:14px;font-weight:700;letter-spacing:2.5px;color:var(--teal);margin:0 0 6px 0;flex:none;}
+  .dark .kicker{color:var(--teal-light);}
+  .title{font-family:Cambria,Georgia,serif;font-weight:700;color:var(--primary);margin:0 0 18px 0;font-size:34px;line-height:1.15;flex:none;}
+  .dark .title{color:var(--white);}
+  .title.big{font-size:46px;}
+
+  .deco-circle{position:absolute;border-radius:50%;opacity:.16;}
+
+  /* ---------- number badge ---------- */
+  .badge{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:var(--teal);color:#fff;font-weight:700;font-size:17px;flex:none;}
+  .badge.accent{background:var(--accent);}
+  .badge.primary{background:var(--primary);}
+
+  /* ---------- agenda / lists with badges ---------- */
+  .row-list{display:flex;flex-direction:column;gap:44px;margin-top:36px;flex:1;justify-content:center;max-height:480px;}
+  .row-item{display:flex;align-items:center;gap:24px;}
+  .row-item .row-text{font-size:27px;font-weight:700;color:var(--ink);}
+  .row-item .badge{width:52px;height:52px;font-size:21px;}
+
+  /* ---------- client slide ---------- */
+  .two-col{display:flex;gap:40px;margin-top:8px;flex:1;}
+  .col{flex:1;}
+  .col h4{font-size:17px;color:var(--teal);margin:0 0 12px 0;}
+  ul.plain{list-style:none;margin:0;padding:0;}
+  ul.plain li{position:relative;padding-left:20px;margin-bottom:13px;font-size:15.5px;line-height:1.4;}
+  ul.plain li::before{content:"•";position:absolute;left:0;color:var(--teal);font-weight:700;}
+  .card{background:var(--card);border-radius:16px;padding:26px 30px;flex:1;}
+  .card h4{font-size:17px;color:var(--primary);margin:0 0 14px 0;}
+  .card ul.plain li::before{color:var(--primary);}
+
+  /* ---------- data category rows ---------- */
+  .cat-sub{font-size:16px;font-style:italic;color:var(--muted);margin:-6px 0 18px 0;flex:none;}
+  .cat-row{display:flex;align-items:center;gap:20px;padding:14px 0;}
+  .cat-label{font-size:18px;font-weight:700;width:230px;flex:none;}
+  .cat-ex{font-size:15px;color:var(--muted);}
+
+  /* ---------- ONE PLOT PER SLIDE ---------- */
+  .plot-tag{font-size:12.5px;font-weight:700;color:var(--muted);letter-spacing:0.5px;margin:2px 0 10px 0;flex:none;}
+  .img-wrap{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;overflow:hidden;}
+  .img-card.single{background:#fff;border:1px solid #D8E4EA;border-radius:12px;padding:14px;box-shadow:0 10px 28px rgba(11,41,66,.14);
+                    max-width:940px;display:flex;align-items:center;justify-content:center;}
+  .img-card.single img{max-width:872px;max-height:460px;width:auto;height:auto;display:block;border-radius:4px;}
+  .one-sentence{font-size:21px;font-weight:600;color:var(--ink);text-align:center;margin:20px auto 0 auto;line-height:1.45;max-width:980px;flex:none;}
+  .dark .one-sentence{color:var(--card);}
+
+  /* ---------- interactive map ---------- */
+  .iframe-wrap{flex:1;display:flex;min-height:0;}
+  .iframe-card{width:100%;height:100%;border-radius:12px;overflow:hidden;border:1px solid #D8E4EA;box-shadow:0 10px 28px rgba(11,41,66,.14);}
+  .iframe-card iframe{width:100%;height:100%;border:0;display:block;}
+
+  /* ---------- final conclusion ---------- */
+  .concl-final-row{display:flex;gap:24px;margin-top:22px;flex:1;}
+  .concl-final-card{flex:1;background:var(--card);border-radius:14px;padding:26px 24px;}
+  .concl-final-card .lbl{font-size:13px;font-weight:700;letter-spacing:1px;color:var(--teal);margin-bottom:12px;}
+  .concl-final-card .txt{font-size:15.5px;color:var(--ink);line-height:1.5;}
+
+  /* ---------- question rows ---------- */
+  .q-row{display:flex;align-items:center;gap:20px;background:var(--card);border-radius:14px;padding:22px 26px;margin-bottom:18px;}
+  .q-row .row-text{font-size:19px;font-weight:700;}
+  .q-row .row-text .note{display:block;font-size:14px;font-weight:400;font-style:italic;color:var(--muted);margin-top:6px;}
+
+  /* ---------- hypothesis intro ---------- */
+  .hypo-card{background:var(--primary);border-radius:16px;padding:28px 34px;margin-top:20px;color:#fff;flex:none;}
+  .hypo-card .lbl{font-size:12px;letter-spacing:2px;font-weight:700;color:var(--teal-light);margin-bottom:10px;}
+  .hypo-card .stmt{font-family:Cambria,Georgia,serif;font-size:23px;font-weight:700;line-height:1.35;}
+  .hypo-card .stmt .note{display:block;font-family:Calibri,Arial,sans-serif;font-size:15px;font-weight:400;font-style:italic;color:var(--teal-light);margin-top:14px;line-height:1.4;}
+  .lookedat{font-size:15px;font-style:italic;color:var(--muted);margin-top:22px;flex:none;}
+
+  /* ---------- conclusion slide (single plot + stat highlight) ---------- */
+  .concl-row{display:flex;gap:34px;align-items:stretch;margin-top:6px;flex:1;min-height:0;}
+  .concl-img{flex:1.15;display:flex;align-items:center;justify-content:center;min-height:0;}
+  .concl-img .img-card.single{max-width:100%;}
+  .concl-stat{flex:1;background:var(--navy);border-radius:16px;color:#fff;padding:34px;display:flex;flex-direction:column;justify-content:center;}
+  .concl-stat .big{font-family:Cambria,Georgia,serif;font-size:30px;font-weight:700;margin-bottom:14px;}
+  .concl-stat .sub{font-size:14px;color:var(--card);margin-bottom:22px;line-height:1.4;}
+  .concl-stat .save{font-family:Cambria,Georgia,serif;font-size:27px;font-weight:700;color:var(--accent);margin-bottom:8px;}
+  .concl-stat .savesub{font-size:13.5px;font-style:italic;color:var(--card);}
+
+  /* ---------- solo conclusion (no paired plot) ---------- */
+  .concl-solo-wrap{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;}
+  .concl-solo{flex:none;max-width:820px;width:100%;padding:44px 60px;text-align:center;}
+  .concl-solo .big{margin-bottom:16px;}
+  .concl-solo .sub{margin-bottom:26px;}
+
+  /* ---------- recommendation ---------- */
+  .rec-row{display:flex;gap:22px;margin-bottom:38px;align-items:flex-start;}
+  .rec-text{flex:1;}
+  .rec-text .t{font-size:22px;font-weight:700;color:var(--primary);margin-bottom:7px;}
+  .rec-text .d{font-size:16.5px;color:var(--ink);line-height:1.45;}
+
+  /* ---------- bottom line stats ---------- */
+  .stat-row{display:flex;gap:26px;margin-top:36px;justify-content:center;}
+  .stat-box{background:var(--card-dark);border-radius:14px;padding:36px 26px;width:300px;text-align:center;}
+  .stat-box .num{font-family:Cambria,Georgia,serif;font-size:52px;font-weight:700;color:var(--accent);margin-bottom:16px;}
+  .stat-box .lbl{font-size:14.5px;color:var(--card);line-height:1.4;}
+
+  /* ---------- title / thanks ---------- */
+  .title-wrap{margin-top:auto;margin-bottom:auto;}
+  .eyebrow{font-size:14px;font-weight:700;letter-spacing:2.5px;color:var(--teal-light);margin-bottom:20px;}
+  .subtitle{font-size:20px;color:var(--card);margin-top:6px;}
+  .footer-line{position:absolute;bottom:56px;left:64px;font-size:13px;color:var(--teal-light);}
+
+  /* ---------- nav ui ---------- */
+  #progress{position:fixed;left:0;bottom:0;height:4px;background:var(--accent);width:0;transition:width .25s ease;z-index:20;}
+  #counter{position:fixed;right:18px;bottom:14px;color:#8fb4c9;font-family:Calibri,Arial,sans-serif;font-size:13px;z-index:20;}
+  #hint{position:fixed;left:18px;bottom:14px;color:#8fb4c9;font-family:Calibri,Arial,sans-serif;font-size:13px;z-index:20;}
+  .click-zone{position:fixed;top:0;bottom:0;width:12%;z-index:15;cursor:pointer;}
+  #zone-prev{left:0;} #zone-next{right:0;}
+
+  /* ---------- print / PDF export: one slide per page ---------- */
+  @media print {
+    @page { size: 13.333in 7.5in; margin: 0; }
+    html, body { background: #fff !important; }
+    #viewport{position:static;overflow:visible;background:#fff;display:block;width:auto;height:auto;}
+    #stage{position:static;width:auto;height:auto;transform:none !important;box-shadow:none;}
+    .slide{position:static !important;display:flex !important;width:13.333in;height:7.5in;page-break-after:always;break-after:page;overflow:hidden;}
+    .slide:last-of-type{page-break-after:auto;break-after:auto;}
+    #progress,#counter,#hint,.click-zone{display:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<div id="viewport">
+  <div id="stage">
+
+    <!-- 1: TITLE -->
+    <section class="slide dark active">
+      <div class="deco-circle" style="width:340px;height:340px;background:var(--teal);top:-140px;right:-60px;"></div>
+      <div class="deco-circle" style="width:260px;height:260px;background:var(--accent);bottom:-120px;left:-90px;"></div>
+      <div class="title-wrap">
+        <div class="eyebrow">KING COUNTY HOUSING DATA &nbsp;·&nbsp; CLIENT PRESENTATION</div>
+        <div class="title big">Finding the Right Home,<br>Without Overpaying</div>
+        <div class="subtitle">A house-hunting game plan for Thomas Hansen</div>
+      </div>
+      <div class="footer-line">by Ahmad Ismail &nbsp;·&nbsp; King County Housing Data, May 2014 – May 2015</div>
+    </section>
+
+    <!-- 2: AGENDA -->
+    <section class="slide">
+      <div class="kicker">AGENDA</div>
+      <div class="title">What We'll Cover</div>
+      <div class="row-list">
+        <div class="row-item"><span class="badge">1</span><span class="row-text">Meet the Client</span></div>
+        <div class="row-item"><span class="badge">2</span><span class="row-text">Inside the Data (King County Housing)</span></div>
+        <div class="row-item"><span class="badge">3</span><span class="row-text">Three Questions We Investigated</span></div>
+        <div class="row-item"><span class="badge">4</span><span class="row-text">What We Found</span></div>
+        <div class="row-item"><span class="badge">5</span><span class="row-text">Our Recommendation</span></div>
+      </div>
+    </section>
+
+    <!-- 3: THE CLIENT -->
+    <section class="slide">
+      <div class="kicker">1 · THE CLIENT</div>
+      <div class="title">Meet Thomas Hansen</div>
+      <div class="two-col">
+        <div class="col">
+          <h4>Who He Is</h4>
+          <ul class="plain">
+            <li>Looking to buy a home in King County</li>
+            <li>Has 5 kids — needs real space</li>
+            <li>Says he has "no money" — meaning a low budget</li>
+            <li>Wants a nice, safe neighborhood for his family</li>
+            <li>Hasn't decided on timing or location yet</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Our Assumptions</h4>
+          <ul class="plain">
+            <li>"No money" &nbsp;→&nbsp; aim for homes under ~$450K</li>
+            <li>5 kids &nbsp;→&nbsp; needs 4–5 bedrooms</li>
+            <li>"Nice neighborhood" &nbsp;→&nbsp; a well-built, well-kept area — not necessarily luxury</li>
+            <li>Timing &amp; location were open questions — these became our 3 research questions</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4: WHAT IS KCHD -->
+    <section class="slide">
+      <div class="kicker">2 · THE DATA</div>
+      <div class="title">What's Inside the King County Housing Data</div>
+      <div class="cat-sub">21,420 home sales, recorded May 2014 – May 2015</div>
+      <div class="cat-row"><span class="badge">1</span><span class="cat-label">Structure</span><span class="cat-ex">bedrooms, bathrooms, living space, lot size, floors</span></div>
+      <div class="cat-row"><span class="badge primary">2</span><span class="cat-label">Quality</span><span class="cat-ex">construction grade, condition</span></div>
+      <div class="cat-row"><span class="badge">3</span><span class="cat-label">Location</span><span class="cat-ex">zip code, latitude &amp; longitude</span></div>
+      <div class="cat-row"><span class="badge primary">4</span><span class="cat-label">History &amp; Price</span><span class="cat-ex">sale price, date sold, year built, year renovated</span></div>
+    </section>
+
+    <!-- ============ 2 · THE DATA — one plot per slide ============ -->
+
+    <!-- 5 -->
+    <section class="slide">
+      <div class="kicker">2 · THE DATA</div>
+      <div class="img-wrap"><div class="img-card single"><img src="plots_Export_2/EDA_Price_Distribution.png"></div></div>
+      <div class="one-sentence">Most homes sell between $300K and $500K — that's the realistic price range to plan around.</div>
+    </section>
+
+    <!-- 6 -->
+    <section class="slide">
+      <div class="kicker">2 · THE DATA</div>
+      <div class="img-wrap"><div class="img-card single"><img src="plots_Export_2/EDA_Houses_Built_by_Decade.png"></div></div>
+      <div class="one-sentence">Most homes were built between the 1950s and 2000s, so don't expect to find something brand new.</div>
+    </section>
+
+    <!-- 7 -->
+    <section class="slide">
+      <div class="kicker">2 · THE DATA</div>
+      <div class="img-wrap"><div class="img-card single"><img src="plots_Export_2/EDA_Living_Space_Distribution.png"></div></div>
+      <div class="one-sentence">Most homes are 1,500–2,000 square feet — a practical, family-sized starting point.</div>
+    </section>
+
+    <!-- 8 -->
+    <section class="slide">
+      <div class="kicker">2 · THE DATA</div>
+      <div class="img-wrap"><div class="img-card single"><img src="plots_Export_2/EDA_Renovation_Status.png"></div></div>
+      <div class="one-sentence">97% of homes sell without ever being renovated, so plan to make any home your own.</div>
+    </section>
+
+    <!-- 9 -->
+    <section class="slide">
+      <div class="kicker">2 · THE DATA · LOCATION</div>
+      <div class="img-wrap"><div class="img-card single"><img src="plots_Export_2/Geographic_Price_Heatmap.png"></div></div>
+      <div class="one-sentence">Prices split sharply north to south: the north and central county are the priciest, the south is the most affordable.</div>
+    </section>
+
+    <!-- 10 -->
+    <section class="slide">
+      <div class="kicker">2 · THE DATA · LOCATION</div>
+      <div class="img-wrap"><div class="img-card single"><img src="plots_Export_2/Geographic_Luxury_Homes.png"></div></div>
+      <div class="one-sentence">Million-dollar homes cluster tightly in the upper-central county — the southern half has almost none.</div>
+    </section>
+
+    <!-- 11 -->
+    <section class="slide">
+      <div class="kicker">2 · THE DATA · LOCATION</div>
+      <div class="img-wrap"><div class="img-card single"><img src="plots_Export_2/Geographic_Waterfront_Properties.png"></div></div>
+      <div class="one-sentence">Waterfront homes are rare, but sitting on the water is one of the biggest price boosters in the data.</div>
+    </section>
+
+    <!-- 12 -->
+    <section class="slide">
+      <div class="kicker">2 · THE DATA · LOCATION</div>
+      <div class="img-wrap"><div class="img-card single"><img src="plots_Export_2/Geographic_High_Construction_Grade.png"></div></div>
+      <div class="one-sentence">The best-built homes (grade 10+) sit in the same upper-central area as the luxury homes — quality and price cluster together.</div>
+    </section>
+
+    <!-- 12b: INTERACTIVE MAP -->
+    <section class="slide">
+      <div class="kicker">2 · THE DATA · LOCATION</div>
+      <div class="title" style="font-size:26px;">Explore Every Home on the Map</div>
+      <div class="iframe-wrap"><div class="iframe-card"><iframe src="html_exports/King_County_Real_Estate_Map_Enhanced.html" loading="lazy"></iframe></div></div>
+      <div class="one-sentence" style="margin-top:14px;">Interactive map — zoom and hover to explore individual homes by price and location.</div>
+    </section>
+
+    <!-- 13: ONE RESEARCH QUESTION + THREE HYPOTHESES -->
+    <section class="slide">
+      <div class="kicker">3 · OUR RESEARCH QUESTION</div>
+      <div class="title" style="font-size:28px;">Does Size, Neighborhood, and Timing All Decide a Home's Price?</div>
+      <div class="lookedat" style="margin-top:0;margin-bottom:6px;">To answer that, we tested three hypotheses:</div>
+      <div class="q-row"><span class="badge accent">H1</span><span class="row-text">The bigger the home — more bedrooms, more square footage — the higher the price.<span class="note">But some homes are smartly designed — more bedrooms without much extra square footage.</span></span></div>
+      <div class="q-row"><span class="badge accent">H2</span><span class="row-text">Zip codes with better-built homes (higher average grade) also carry higher prices.<span class="note">But even an average-grade zip code might already offer a good price.</span></span></div>
+      <div class="q-row"><span class="badge accent">H3</span><span class="row-text">There are specific months — likely winter — when prices are lower than the rest of the year.</span></div>
+    </section>
+
+    <!-- 14: Q1 INTRO -->
+    <section class="slide">
+      <div class="kicker">HYPOTHESIS 1</div>
+      <div class="title">Does Size Really Decide the Price?</div>
+      <div class="hypo-card">
+        <div class="lbl">HYPOTHESIS</div>
+        <div class="stmt">The bigger the home — more bedrooms, more square footage — the higher the price.<span class="note">But some homes are smartly designed — more bedrooms without much extra square footage.</span></div>
+      </div>
+      <div class="lookedat">What we looked at: living space, bedrooms, bathrooms, and price.</div>
+    </section>
+
+    <!-- ============ HYPOTHESIS 1 — one plot per slide ============ -->
+
+    <!-- 16b -->
+    <section class="slide">
+      <div class="kicker">HYPOTHESIS 1 · FINDING 1 OF 9</div>
+      <div class="img-wrap"><div class="img-card single"><img src="plots_Export_2/H1_Price_vs_Living_Area_V2.png"></div></div>
+      <div class="one-sentence">Living space and price move closely together — a correlation of 0.70 out of 1, making square footage one of the strongest single drivers of price.</div>
+    </section>
+
+    <!-- 17 -->
+    <section class="slide">
+      <div class="kicker">HYPOTHESIS 1 · FINDING 2 OF 9</div>
+      <div class="img-wrap"><div class="img-card single"><img src="plots_Export_2/H1_Median_Price_by_Bedrooms.png"></div></div>
+      <div class="one-sentence">Median price increases with bedroom count, then levels off past 5 bedrooms.</div>
+    </section>
+
+    <!-- 18 -->
+    <section class="slide">
+      <div class="kicker">HYPOTHESIS 1 · FINDING 3 OF 9</div>
+      <div class="img-wrap"><div class="img-card single"><img src="plots_Export_2/H1_Median_Price_by_Bathrooms.png"></div></div>
+      <div class="one-sentence">Median price keeps climbing with more bathrooms — bathrooms track price even more closely than bedrooms.</div>
+    </section>
+
+    <!-- 19 -->
+    <section class="slide">
+      <div class="kicker">HYPOTHESIS 1 · FINDING 4 OF 9</div>
+      <div class="img-wrap"><div class="img-card single"><img src="plots_Export_2/H1_Price_per_SqFt_by_Bedrooms.png"></div></div>
+      <div class="one-sentence">1–2 bedroom homes cost $334–$389 per square foot, while 4–6 bedroom homes cost just $239–$248 — bigger is actually cheaper per square foot.</div>
+    </section>
+
+    <!-- 20 -->
+    <section class="slide">
+      <div class="kicker">HYPOTHESIS 1 · FINDING 5 OF 9</div>
+      <div class="img-wrap"><div class="img-card single"><img src="plots_Export_2/H1_Price_per_SqFt_by_Bathrooms.png"></div></div>
+      <div class="one-sentence">Cost per square foot holds steady or even rises with more bathrooms, so bathrooms are worth paying for.</div>
+    </section>
+
+    <!-- 21 -->
+    <section class="slide">
+      <div class="kicker">HYPOTHESIS 1 · FINDING 6 OF 9</div>
+      <div class="img-wrap"><div class="img-card single"><img src="plots_Export_2/H1_Avg_Price_by_Size_Tier.png"></div></div>
+      <div class="one-sentence">Price jumps at every size tier — Small $329K, Medium $445K, Large $673K, Luxury $1.05M — with the biggest jump past 2,500 sq ft.</div>
+    </section>
+
+    <!-- 22 -->
+    <section class="slide">
+      <div class="kicker">HYPOTHESIS 1 · FINDING 7 OF 9</div>
+      <div class="img-wrap"><div class="img-card single"><img src="plots_Export_2/H1_Cost_Efficiency_Price_per_SqFt_by_Bedrooms.png"></div></div>
+      <div class="one-sentence">Cost efficiency improves sharply once a home has 4 or more bedrooms — that's the sweet spot for space per dollar.</div>
+    </section>
+
+    <!-- 23 -->
+    <section class="slide">
+      <div class="kicker">HYPOTHESIS 1 · FINDING 8 OF 9</div>
+      <div class="img-wrap"><div class="img-card single"><img src="plots_Export_2/H1_Price_Basement_vs_NoBasement.png"></div></div>
+      <div class="one-sentence">A finished basement adds real value in 3–4 bedroom homes, but that gap disappears by 5 bedrooms.</div>
+    </section>
+
+    <!-- 25 -->
+    <section class="slide">
+      <div class="kicker">HYPOTHESIS 1 · FINDING 9 OF 9</div>
+      <div class="img-wrap"><div class="img-card single"><img src="plots_Export_2/H1_Living_Area_by_Bedrooms.png"></div></div>
+      <div class="one-sentence">Many 4-bedroom homes fit at or below 2,200 sq ft, while 5-bedroom homes jump toward 3,000 sq ft.</div>
+    </section>
+
+    <!-- 27: Q1 CONCLUSION (finding 13 of 13, paired with a stat highlight) -->
+    <section class="slide">
+      <div class="kicker">HYPOTHESIS 1 · CONCLUSION</div>
+      <div class="title" style="font-size:28px;">Smart Layout Beats Sprawling Luxury</div>
+      <div class="concl-row">
+        <div class="concl-img"><div class="img-card single"><img src="plots_Export_2/H1_Smart_vs_Luxury_Layout_Price.png"></div></div>
+        <div class="concl-stat">
+          <div class="big">$415K &nbsp;vs&nbsp; $715K</div>
+          <div class="sub">Smart layout (4+ beds, ≤ 2,400 sq ft) vs. sprawling luxury (≤ 3 beds, 2,500+ sq ft)</div>
+          <div class="save">Save $300,000</div>
+          <div class="savesub">a 42% discount for the same bedroom count</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 28: Q2 INTRO -->
+    <section class="slide">
+      <div class="kicker">HYPOTHESIS 2</div>
+      <div class="title">Does a Nicer Neighborhood Cost More?</div>
+      <div class="hypo-card">
+        <div class="lbl">HYPOTHESIS</div>
+        <div class="stmt">Zip codes with better-built homes (higher average grade) also carry higher prices.<span class="note">But even an average-grade zip code might already offer a good price.</span></div>
+      </div>
+      <div class="lookedat">What we looked at: zip code, construction grade, and median price.</div>
+    </section>
+
+    <!-- 29 -->
+    <section class="slide">
+      <div class="kicker">HYPOTHESIS 2 · FINDING 1 OF 2</div>
+      <div class="img-wrap"><div class="img-card single"><img src="plots_Export_2/H2_Avg_Grade_vs_Median_Price.png"></div></div>
+      <div class="one-sentence">Build quality and price move together closely (r = 0.82) — better-built zip codes cost more.</div>
+    </section>
+
+    <!-- 30 -->
+    <section class="slide">
+      <div class="kicker">HYPOTHESIS 2 · FINDING 2 OF 2</div>
+      <div class="img-wrap"><div class="img-card single"><img src="plots_Export_2/H2_Median_Price_by_Quality_Tier.png"></div></div>
+      <div class="one-sentence">Standard zip codes median $305K, Above Average $442K (+45%), Premium $710K — "Above Average" is the value sweet spot.</div>
+    </section>
+
+    <!-- 30b: Q2 CONCLUSION -->
+    <section class="slide">
+      <div class="kicker">HYPOTHESIS 2 · CONCLUSION</div>
+      <div class="title" style="font-size:28px;">Above Average Zip Codes Are the Sweet Spot</div>
+      <div class="concl-solo-wrap">
+        <div class="concl-stat concl-solo">
+          <div class="big">$305K &nbsp;→&nbsp; $442K &nbsp;→&nbsp; $710K</div>
+          <div class="sub">Standard grade &nbsp;→&nbsp; Above Average grade (+45%) &nbsp;→&nbsp; Premium grade — median price by zip code quality</div>
+          <div class="save">Target "Above Average" (7.3–8.0 grade)</div>
+          <div class="savesub">a nice, well-kept area — without the luxury markup of top-tier zip codes</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 31: Q3 INTRO -->
+    <section class="slide">
+      <div class="kicker">HYPOTHESIS 3</div>
+      <div class="title">Is There a Best Time to Buy?</div>
+      <div class="hypo-card">
+        <div class="lbl">HYPOTHESIS</div>
+        <div class="stmt">There are specific months — likely winter — when prices are lower than the rest of the year.</div>
+      </div>
+      <div class="lookedat">What we looked at: sale date, average price per month, and number of sales per month.</div>
+    </section>
+
+    <!-- 32 -->
+    <section class="slide">
+      <div class="kicker">HYPOTHESIS 3 · FINDING 1 OF 2</div>
+      <div class="img-wrap"><div class="img-card single"><img src="plots_Export_2/H3_Average_House_Price_by_Month.png"></div></div>
+      <div class="one-sentence">February has the lowest average price of the year (~$508K) — the cheapest month to buy.</div>
+    </section>
+
+    <!-- 33 -->
+    <section class="slide">
+      <div class="kicker">HYPOTHESIS 3 · FINDING 2 OF 2</div>
+      <div class="img-wrap"><div class="img-card single"><img src="plots_Export_2/H3_Number_of_Sales_by_Month.png"></div></div>
+      <div class="one-sentence">January and February also have the fewest sales — less competition alongside the lowest prices.</div>
+    </section>
+
+    <!-- 33b: Q3 CONCLUSION -->
+    <section class="slide">
+      <div class="kicker">HYPOTHESIS 3 · CONCLUSION</div>
+      <div class="title" style="font-size:28px;">Winter Is the Buyer's Window</div>
+      <div class="concl-solo-wrap">
+        <div class="concl-stat concl-solo">
+          <div class="big">February</div>
+          <div class="sub">The lowest average price of the year (~$508K) — and one of the quietest months for sales</div>
+          <div class="save">House-hunt in January–February</div>
+          <div class="savesub">the lowest prices, paired with the least competition from other buyers</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 34: RECOMMENDATION -->
+    <section class="slide">
+      <div class="kicker">5 · OUR RECOMMENDATION</div>
+      <div class="title">The Game Plan for Thomas</div>
+      <div class="rec-row"><span class="badge accent">1</span><div class="rec-text"><div class="t">Target the Smart Layout</div><div class="d">4–5 bedrooms, 1,800–2,400 sq ft, ideally with a finished basement → around $415K.</div></div></div>
+      <div class="rec-row"><span class="badge accent">2</span><div class="rec-text"><div class="t">Aim for "Above Average" Zip Codes</div><div class="d">Construction grade 7.3–8.0 → a nice, well-kept area around $442K.</div></div></div>
+      <div class="rec-row"><span class="badge accent">3</span><div class="rec-text"><div class="t">Prioritize Bathrooms Over Extra Bedrooms</div><div class="d">2.5–3.5 bathrooms hold their value better.</div></div></div>
+      <div class="rec-row"><span class="badge accent">4</span><div class="rec-text"><div class="t">Time It for Winter</div><div class="d">House-hunt in January–February for the lowest prices and the least competition.</div></div></div>
+    </section>
+
+    <!-- 35: BOTTOM LINE -->
+    <section class="slide dark">
+      <div class="kicker">THE BOTTOM LINE</div>
+      <div class="title">What This Means for Thomas</div>
+      <div class="stat-row">
+        <div class="stat-box"><div class="num">42%</div><div class="lbl">saved with a smart layout instead of a sprawling luxury one</div></div>
+        <div class="stat-box"><div class="num">$442K</div><div class="lbl">buys into a nice, above-average zip code</div></div>
+        <div class="stat-box"><div class="num">Feb</div><div class="lbl">is the cheapest, quietest month to buy</div></div>
+      </div>
+    </section>
+
+    <!-- 35b: FINAL CONCLUSION -->
+    <section class="slide">
+      <div class="kicker">CONCLUSION</div>
+      <div class="title">Bringing It All Together</div>
+      <div class="concl-final-row">
+        <div class="concl-final-card">
+          <div class="lbl">THE CHALLENGE</div>
+          <div class="txt">Thomas needs space for 5 kids, in a nice neighborhood — on a very tight budget.</div>
+        </div>
+        <div class="concl-final-card">
+          <div class="lbl">WHAT THE DATA SHOWS</div>
+          <div class="txt">A smart layout, an "above average" zip code, and winter timing all stretch that budget further.</div>
+        </div>
+        <div class="concl-final-card">
+          <div class="lbl">THE PLAN</div>
+          <div class="txt">A 4–5 bed, 1,800–2,400 sq ft home with a basement, in a 7.3–8.0 grade zip code, bought in January or February.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 36: THANK YOU -->
+    <section class="slide dark">
+      <div class="deco-circle" style="width:320px;height:320px;background:var(--teal);top:-140px;left:-100px;"></div>
+      <div class="title-wrap">
+        <div class="title big">Thank You</div>
+        <div class="subtitle">Questions? Let's talk about finding Thomas's next home.</div>
+      </div>
+      <div class="footer-line">Full analysis &amp; code: github.com — ds-eda-project-Ahmad_Ismail</div>
+    </section>
+
+  </div>
+</div>
+
+<div id="progress"></div>
+<div id="counter"></div>
+<div id="hint">← → to navigate</div>
+<div class="click-zone" id="zone-prev"></div>
+<div class="click-zone" id="zone-next"></div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  let i = 0;
+  const counter = document.getElementById('counter');
+  const progress = document.getElementById('progress');
+
+  function render(){
+    slides.forEach((s, idx) => s.classList.toggle('active', idx === i));
+    counter.textContent = (i+1) + ' / ' + slides.length;
+    progress.style.width = (((i+1) / slides.length) * 100) + '%';
+  }
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    render();
+  }
+  document.addEventListener('keydown', (e) => {
+    if (['ArrowRight','ArrowDown','PageDown',' '].includes(e.key)) { go(i+1); e.preventDefault(); }
+    if (['ArrowLeft','ArrowUp','PageUp'].includes(e.key)) { go(i-1); e.preventDefault(); }
+    if (e.key === 'Home') go(0);
+    if (e.key === 'End') go(slides.length-1);
+  });
+  document.getElementById('zone-next').addEventListener('click', () => go(i+1));
+  document.getElementById('zone-prev').addEventListener('click', () => go(i-1));
+
+  function resize(){
+    const scale = Math.min(window.innerWidth/1280, window.innerHeight/720);
+    document.getElementById('stage').style.transform = `scale(${scale})`;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+  render();
+</script>
+
+</body>
+</html>
